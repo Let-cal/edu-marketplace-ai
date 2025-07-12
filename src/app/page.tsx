@@ -5,14 +5,14 @@ import { ProductGridSkeleton } from "@/components/LoadingSkeleton";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
 import SearchFilters from "@/components/SearchFilters";
+import Pagination from "@/components/ui/Pagination";
 import { productApi } from "@/lib/api";
 import { Product } from "@/lib/types";
-import { Search, Wand2, X } from "lucide-react";
+import { Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -21,17 +21,30 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<Product[]>([]);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+
+  // Search/Filter state
+  const [currentSearch, setCurrentSearch] = useState("");
+  const [currentPriceFilter, setCurrentPriceFilter] = useState({
+    min: 0,
+    max: Infinity,
+  });
+
   useEffect(() => {
     loadProducts();
     loadFavorites();
-  }, []);
+  }, [currentPage]);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const data = await productApi.getAll();
-      setProducts(data);
-      setFilteredProducts(data);
+      const data = await productApi.getAll(currentPage, 6);
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setTotalProducts(data.total);
     } catch (error) {
       console.error("Error loading products:", error);
     } finally {
@@ -47,17 +60,21 @@ export default function Home() {
   };
 
   const handleSearch = async (query: string) => {
+    setCurrentSearch(query);
+    setCurrentPage(1);
+    setShowSuggestions(false);
+
     if (!query.trim()) {
-      setFilteredProducts(products);
-      setShowSuggestions(false);
+      loadProducts();
       return;
     }
 
     try {
       setSearchLoading(true);
-      const results = await productApi.search(query);
-      setFilteredProducts(results);
-      setShowSuggestions(false);
+      const data = await productApi.search(query, 1, 6);
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setTotalProducts(data.total);
     } catch (error) {
       console.error("Error searching products:", error);
     } finally {
@@ -66,16 +83,25 @@ export default function Home() {
   };
 
   const handlePriceFilter = async (min: number, max: number) => {
+    setCurrentPriceFilter({ min, max });
+    setCurrentPage(1);
+    setShowSuggestions(false);
+
     if (min === 0 && max === Infinity) {
-      setFilteredProducts(products);
+      if (currentSearch) {
+        handleSearch(currentSearch);
+      } else {
+        loadProducts();
+      }
       return;
     }
 
     try {
       setSearchLoading(true);
-      const results = await productApi.getByPriceRange(min, max);
-      setFilteredProducts(results);
-      setShowSuggestions(false);
+      const data = await productApi.getByPriceRange(min, max, 1, 6);
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setTotalProducts(data.total);
     } catch (error) {
       console.error("Error filtering products:", error);
     } finally {
@@ -86,9 +112,10 @@ export default function Home() {
   const handleGetSuggestions = async () => {
     try {
       setSuggestionsLoading(true);
-      const results = await productApi.getSuggestions("user-1");
+      const results = await productApi.getSuggestions();
       setSuggestions(results);
       setShowSuggestions(true);
+      setCurrentPage(1);
     } catch (error) {
       console.error("Error getting suggestions:", error);
     } finally {
@@ -118,7 +145,45 @@ export default function Home() {
     localStorage.setItem("recentlyViewed", JSON.stringify(updatedViewed));
   };
 
-  const displayProducts = showSuggestions ? suggestions : filteredProducts;
+  const handlePageChange = async (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    try {
+      setLoading(true);
+      let data;
+
+      if (showSuggestions) {
+        // For suggestions, we don't paginate since it's limited
+        return;
+      } else if (currentSearch) {
+        data = await productApi.search(currentSearch, page, 6);
+      } else if (
+        currentPriceFilter.min !== 0 ||
+        currentPriceFilter.max !== Infinity
+      ) {
+        data = await productApi.getByPriceRange(
+          currentPriceFilter.min,
+          currentPriceFilter.max,
+          page,
+          6
+        );
+      } else {
+        data = await productApi.getAll(page, 6);
+      }
+
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setTotalProducts(data.total);
+    } catch (error) {
+      console.error("Error loading page:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayProducts = showSuggestions ? suggestions : products;
+  const shouldShowPagination = !showSuggestions && totalPages > 1;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -165,23 +230,46 @@ export default function Home() {
           </div>
         )}
 
+        {!showSuggestions && (
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-gray-600">
+              Showing {products.length} of {totalProducts} courses
+              {currentSearch && ` for "${currentSearch}"`}
+            </p>
+            <p className="text-sm text-gray-500">
+              Page {currentPage} of {totalPages}
+            </p>
+          </div>
+        )}
+
         {loading ? (
           <ProductGridSkeleton />
         ) : displayProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onViewDetails={handleViewDetails}
-                onToggleFavorite={handleToggleFavorite}
-                isFavorite={favorites.has(product.id)}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {displayProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onViewDetails={handleViewDetails}
+                  onToggleFavorite={handleToggleFavorite}
+                  isFavorite={favorites.has(product.id)}
+                />
+              ))}
+            </div>
+
+            {shouldShowPagination && !loading && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                className="mt-8"
               />
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-12">
-            <Search className="w-16 h-16 text-gray-300 mb-4" />
+            <i className="ri-search-line text-6xl text-gray-300 mb-4"></i>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No courses found
             </h3>
