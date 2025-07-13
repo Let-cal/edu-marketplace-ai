@@ -154,6 +154,97 @@ export const productApi = {
       })
       .slice(0, 6);
   },
+
+  getChatRecommendations: async (query: string): Promise<Product[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const queryLower = query.toLowerCase();
+
+    // Keywords mapping for better matching
+    const keywordMap: { [key: string]: string[] } = {
+      business: [
+        "business",
+        "professional",
+        "corporate",
+        "workplace",
+        "office",
+      ],
+      conversation: [
+        "conversation",
+        "speaking",
+        "talk",
+        "chat",
+        "oral",
+        "communication",
+      ],
+      grammar: ["grammar", "structure", "rules", "syntax", "tenses"],
+      writing: ["writing", "composition", "essay", "written", "text"],
+      pronunciation: [
+        "pronunciation",
+        "accent",
+        "speaking",
+        "phonics",
+        "sound",
+      ],
+      vocabulary: ["vocabulary", "words", "lexicon", "terms", "language"],
+      ielts: ["ielts", "international english", "test preparation"],
+      toefl: ["toefl", "test of english", "exam"],
+      toeic: ["toeic", "test of english for international"],
+      beginner: ["beginner", "basic", "fundamental", "starter", "elementary"],
+      intermediate: ["intermediate", "middle", "moderate"],
+      advanced: ["advanced", "expert", "proficient", "high level"],
+      native: ["native", "american", "british", "australian", "canadian"],
+      academic: ["academic", "university", "scholarly", "formal"],
+      travel: ["travel", "tourism", "vacation", "trip"],
+    };
+
+    // Find matching products based on keywords
+    const matches = mockProducts.filter((product) => {
+      const searchableText = `${product.title} ${product.description} ${
+        product.fullDescription
+      } ${product.tags.join(" ")} ${product.category}`.toLowerCase();
+
+      // Direct text matching
+      if (searchableText.includes(queryLower)) {
+        return true;
+      }
+
+      // Keyword mapping matching
+      for (const [key, keywords] of Object.entries(keywordMap)) {
+        if (keywords.some((keyword) => queryLower.includes(keyword))) {
+          if (searchableText.includes(key)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    });
+
+    // If no direct matches, try partial matching
+    if (matches.length === 0) {
+      const queryWords = queryLower
+        .split(" ")
+        .filter((word) => word.length > 2);
+      return mockProducts
+        .filter((product) => {
+          const searchableText = `${product.title} ${
+            product.description
+          } ${product.tags.join(" ")}`.toLowerCase();
+          return queryWords.some((word) => searchableText.includes(word));
+        })
+        .slice(0, 4);
+    }
+
+    // Sort by relevance (rating and review count)
+    return matches
+      .sort((a, b) => {
+        const scoreA = a.rating * Math.log(a.reviewCount + 1);
+        const scoreB = b.rating * Math.log(b.reviewCount + 1);
+        return scoreB - scoreA;
+      })
+      .slice(0, 4);
+  },
 };
 
 export const userApi = {

@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "../../lib/utils";
 
@@ -52,7 +53,7 @@ export default function Modal({
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors cursor-pointer"
         >
-          <i className="ri-close-line text-lg"></i>
+          <X className="w-5 h-5 text-lg" />
         </button>
         <div className="overflow-y-auto max-h-[90vh]">{children}</div>
       </div>

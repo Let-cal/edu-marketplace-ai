@@ -5,7 +5,6 @@ import { Bell, GraduationCap, ShoppingCart, User } from "lucide-react"; // Impor
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-
 const navigation = [
   { name: "Home", href: "/" },
   { name: "Favorites", href: "/favorites" },
@@ -50,15 +49,22 @@ export default function Header() {
 
           <div className="flex items-center space-x-4">
             <button className="p-2 text-gray-600 hover:text-pink-600 transition-colors cursor-pointer">
-              <Bell className="w-5 h-5" /> {/* Replace ri-notification-line */}
+              <Bell className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-600 hover:text-pink-600 transition-colors cursor-pointer">
-              <ShoppingCart className="w-5 h-5" />{" "}
-              {/* Replace ri-shopping-cart-line */}
-            </button>
+            <Link href="/cart">
+              <button
+                className={cn(
+                  "p-2 transition-colors cursor-pointer",
+                  pathname === "/cart"
+                    ? "text-pink-600"
+                    : "text-gray-600 hover:text-pink-600"
+                )}
+              >
+                <ShoppingCart className="w-5 h-5" />
+              </button>
+            </Link>
             <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center cursor-pointer">
               <User className="w-5 h-5 text-white" />{" "}
-              {/* Replace ri-user-line */}
             </div>
           </div>
         </div>

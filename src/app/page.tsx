@@ -1,5 +1,6 @@
 "use client";
 
+import ChatBot from "@/components/ChatBot";
 import Header from "@/components/Header";
 import { ProductGridSkeleton } from "@/components/LoadingSkeleton";
 import ProductCard from "@/components/ProductCard";
@@ -287,6 +288,12 @@ export default function Home() {
         onClose={() => setSelectedProduct(null)}
         onToggleFavorite={handleToggleFavorite}
         isFavorite={selectedProduct ? favorites.has(selectedProduct.id) : false}
+      />
+
+      <ChatBot
+        onViewDetails={handleViewDetails}
+        onToggleFavorite={handleToggleFavorite}
+        favorites={favorites}
       />
     </div>
   );

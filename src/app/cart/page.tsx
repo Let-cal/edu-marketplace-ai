@@ -78,15 +78,15 @@ export default function CartPage() {
         <Header />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 rounded w-1/4 mb-8"></div>
+            <div className="h-8 bg-gray-300 rounded w-full sm:w-1/2 lg:w-1/4 mb-8"></div>
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-lg p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-20 h-20 bg-gray-300 rounded-lg"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                <div key={i} className="bg-white rounded-lg p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div className="w-full sm:w-20 h-20 bg-gray-300 rounded-lg"></div>
+                    <div className="flex-1 space-y-2 w-full">
+                      <div className="h-4 bg-gray-300 rounded w-full sm:w-3/4"></div>
+                      <div className="h-4 bg-gray-300 rounded w-full sm:w-1/2"></div>
                     </div>
                   </div>
                 </div>
@@ -103,9 +103,11 @@ export default function CartPage() {
       <Header />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Shopping Cart
+            </h1>
             <p className="text-gray-600 mt-2">
               {totalItems} {totalItems === 1 ? "course" : "courses"} in your
               cart
@@ -115,7 +117,7 @@ export default function CartPage() {
             <Button
               variant="ghost"
               onClick={clearCart}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
             >
               <Trash2 className="w-5 h-5 mr-2" />
               Clear Cart
@@ -143,15 +145,15 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+                  className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100"
                 >
-                  <div className="flex items-start space-x-4">
-                    <div className="w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div className="w-full sm:w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg overflow-hidden flex-shrink-0">
                       <img
                         src={item.thumbnail}
                         alt={item.title}
@@ -160,18 +162,18 @@ export default function CartPage() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 pr-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-2 sm:space-y-0">
+                        <div className="flex-1 sm:pr-4">
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-700 mb-2">
                             {item.category}
                           </span>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
                             {item.title}
                           </h3>
                           <p className="text-gray-600 text-sm mb-2">
                             By {item.instructor}
                           </p>
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500">
                             <div className="flex items-center">
                               <Star
                                 className="w-4 h-4 text-yellow-400 mr-1"
@@ -199,13 +201,13 @@ export default function CartPage() {
 
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 cursor-pointer"
+                          className="w-8 h-8 items-center justify-center text-gray-400 hover:text-red-500 cursor-pointer self-start hidden sm:flex"
                         >
                           <X className="w-5 h-5" />
                         </button>
                       </div>
 
-                      <div className="flex items-center justify-between mt-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 space-y-3 sm:space-y-0">
                         <div className="flex items-center space-x-3">
                           <span className="text-sm text-gray-500">
                             Quantity:
@@ -232,16 +234,23 @@ export default function CartPage() {
                             </button>
                           </div>
                         </div>
-
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-pink-600">
-                            {formatPrice(item.price * item.quantity)} IDR
-                          </div>
-                          {item.quantity > 1 && (
-                            <div className="text-sm text-gray-500">
-                              {formatPrice(item.price)} IDR each
+                        <div className="flex flex-row justify-between">
+                          <div className="text-left sm:text-right">
+                            <div className="text-lg font-bold text-pink-600">
+                              {formatPrice(item.price * item.quantity)} IDR
                             </div>
-                          )}
+                            {item.quantity > 1 && (
+                              <div className="text-sm text-gray-500">
+                                {formatPrice(item.price)} IDR each
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 cursor-pointer self-start  sm:hidden"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -251,7 +260,7 @@ export default function CartPage() {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 sticky top-8">
+              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 lg:sticky lg:top-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Order Summary
                 </h3>
@@ -259,7 +268,9 @@ export default function CartPage() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal ({totalItems} items)</span>
-                    <span>{formatPrice(totalPrice)} IDR</span>
+                    <span className="break-all">
+                      {formatPrice(totalPrice)} IDR
+                    </span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Discount</span>
@@ -270,7 +281,7 @@ export default function CartPage() {
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold text-gray-900">
                       <span>Total</span>
-                      <span className="text-pink-600">
+                      <span className="text-pink-600 break-all">
                         {formatPrice(totalPrice)} IDR
                       </span>
                     </div>
@@ -284,7 +295,7 @@ export default function CartPage() {
                   </Button>
                   <Link href="/">
                     <Button variant="outline" className="w-full" size="lg">
-                      <i className="ri-arrow-left-line mr-2"></i>
+                      <ArrowLeft className="w-5 h-5 mr-2" />
                       Continue Shopping
                     </Button>
                   </Link>
@@ -292,8 +303,8 @@ export default function CartPage() {
 
                 <div className="mt-6 pt-6 border-t">
                   <div className="flex items-center text-sm text-gray-600">
-                    <ShieldCheck className="w-4 h-4 text-green-500 mr-2" />
-                    Secure checkout with 256-bit SSL encryption
+                    <ShieldCheck className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                    <span>Secure checkout with 256-bit SSL encryption</span>
                   </div>
                 </div>
               </div>
