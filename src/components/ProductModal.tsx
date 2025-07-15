@@ -6,7 +6,6 @@ import {
   Clock,
   Download,
   Heart,
-  Play,
   PlayCircle,
   ShieldCheck,
   ShoppingCart,
@@ -95,14 +94,6 @@ export default function ProductModal({
                   className="object-cover"
                   onLoad={() => setImageLoaded(true)}
                 />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center cursor-pointer hover:bg-white transition-colors">
-                    <Play
-                      className="w-8 h-8 text-pink-600 ml-1"
-                      fill="currentColor"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
 

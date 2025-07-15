@@ -12,6 +12,7 @@ export interface Product {
   duration: string
   level: 'Beginner' | 'Intermediate' | 'Advanced'
   tags: string[]
+  similarityScore?: number;
 }
 
 export interface User {
@@ -26,4 +27,11 @@ export interface ApiResponse<T> {
   data: T
   success: boolean
   message?: string
+}
+
+export interface SuggestionBasedOn {
+  categories: string[];
+  levels: string[];
+  averagePrice?: number;
+  totalInteractions: number;
 }

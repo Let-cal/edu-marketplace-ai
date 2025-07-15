@@ -5,11 +5,12 @@ import Header from "@/components/Header";
 import { ProductGridSkeleton } from "@/components/LoadingSkeleton";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
-import SearchFilters from "@/components/SearchFilters";
+import SearchFilters, { FilterCriteria } from "@/components/SearchFilters";
+import SuggestionExplanation from "@/components/SuggestionExplanation";
 import Pagination from "@/components/ui/Pagination";
 import { productApi } from "@/lib/api";
-import { Product } from "@/lib/types";
-import { Wand2, X } from "lucide-react";
+import { Product, SuggestionBasedOn } from "@/lib/types";
+import { Search, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -21,23 +22,58 @@ export default function Home() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [suggestionBasedOn, setSuggestionBasedOn] =
+    useState<SuggestionBasedOn | null>(null);
+  const [suggestionSort, setSuggestionSort] = useState("relevance");
+
+  // Filter options
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableInstructors, setAvailableInstructors] = useState<string[]>(
+    []
+  );
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
 
-  // Search/Filter state
-  const [currentSearch, setCurrentSearch] = useState("");
-  const [currentPriceFilter, setCurrentPriceFilter] = useState({
-    min: 0,
-    max: Infinity,
+  // Current filters
+  const [currentFilters, setCurrentFilters] = useState<FilterCriteria>({
+    search: "",
+    categories: [],
+    levels: [],
+    priceRange: { min: 0, max: Infinity },
+    minRating: 0,
+    reviewCountRange: "all",
+    instructors: [],
   });
 
   useEffect(() => {
-    loadProducts();
-    loadFavorites();
-  }, [currentPage]);
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!showSuggestions) {
+      loadProducts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, showSuggestions]);
+
+  const initializeData = async () => {
+    try {
+      // Load filter options
+      const filterOptions = await productApi.getFilterOptions();
+      setAvailableCategories(filterOptions.categories);
+      setAvailableInstructors(filterOptions.instructors);
+
+      // Load initial products
+      loadProducts();
+      loadFavorites();
+    } catch (error) {
+      console.error("Error initializing data:", error);
+    }
+  };
 
   const loadProducts = async () => {
     try {
@@ -60,46 +96,30 @@ export default function Home() {
     }
   };
 
-  const handleSearch = async (query: string) => {
-    setCurrentSearch(query);
+  const handleFiltersChange = async (filters: FilterCriteria) => {
+    setCurrentFilters(filters);
     setCurrentPage(1);
     setShowSuggestions(false);
 
-    if (!query.trim()) {
+    // Check if any filters are applied
+    const hasFilters =
+      filters.search ||
+      filters.categories.length > 0 ||
+      filters.levels.length > 0 ||
+      filters.priceRange.min > 0 ||
+      filters.priceRange.max < Infinity ||
+      filters.minRating > 0 ||
+      filters.reviewCountRange !== "all" ||
+      filters.instructors.length > 0;
+
+    if (!hasFilters) {
       loadProducts();
       return;
     }
 
     try {
       setSearchLoading(true);
-      const data = await productApi.search(query, 1, 6);
-      setProducts(data.products);
-      setTotalPages(data.totalPages);
-      setTotalProducts(data.total);
-    } catch (error) {
-      console.error("Error searching products:", error);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  const handlePriceFilter = async (min: number, max: number) => {
-    setCurrentPriceFilter({ min, max });
-    setCurrentPage(1);
-    setShowSuggestions(false);
-
-    if (min === 0 && max === Infinity) {
-      if (currentSearch) {
-        handleSearch(currentSearch);
-      } else {
-        loadProducts();
-      }
-      return;
-    }
-
-    try {
-      setSearchLoading(true);
-      const data = await productApi.getByPriceRange(min, max, 1, 6);
+      const data = await productApi.getByFilters(filters, 1, 6);
       setProducts(data.products);
       setTotalPages(data.totalPages);
       setTotalProducts(data.total);
@@ -113,14 +133,31 @@ export default function Home() {
   const handleGetSuggestions = async () => {
     try {
       setSuggestionsLoading(true);
-      const results = await productApi.getSuggestions();
-      setSuggestions(results);
+      const results = await productApi.getSuggestions("user-1", suggestionSort);
+      setSuggestions(results.products);
+      setSuggestionBasedOn(results.basedOn);
       setShowSuggestions(true);
       setCurrentPage(1);
     } catch (error) {
       console.error("Error getting suggestions:", error);
     } finally {
       setSuggestionsLoading(false);
+    }
+  };
+
+  const handleSuggestionSortChange = async (sortType: string) => {
+    setSuggestionSort(sortType);
+    if (showSuggestions) {
+      try {
+        setSuggestionsLoading(true);
+        const results = await productApi.getSuggestions("user-1", sortType);
+        setSuggestions(results.products);
+        setSuggestionBasedOn(results.basedOn);
+      } catch (error) {
+        console.error("Error sorting suggestions:", error);
+      } finally {
+        setSuggestionsLoading(false);
+      }
     }
   };
 
@@ -150,29 +187,14 @@ export default function Home() {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
+    if (showSuggestions) {
+      // For suggestions, handle pagination differently since we have 12 items
+      return;
+    }
+
     try {
       setLoading(true);
-      let data;
-
-      if (showSuggestions) {
-        // For suggestions, we don't paginate since it's limited
-        return;
-      } else if (currentSearch) {
-        data = await productApi.search(currentSearch, page, 6);
-      } else if (
-        currentPriceFilter.min !== 0 ||
-        currentPriceFilter.max !== Infinity
-      ) {
-        data = await productApi.getByPriceRange(
-          currentPriceFilter.min,
-          currentPriceFilter.max,
-          page,
-          6
-        );
-      } else {
-        data = await productApi.getAll(page, 6);
-      }
-
+      const data = await productApi.getByFilters(currentFilters, page, 6);
       setProducts(data.products);
       setTotalPages(data.totalPages);
       setTotalProducts(data.total);
@@ -183,8 +205,18 @@ export default function Home() {
     }
   };
 
-  const displayProducts = showSuggestions ? suggestions : products;
-  const shouldShowPagination = !showSuggestions && totalPages > 1;
+  // For suggestions, we need to paginate client-side since we have all 12 items
+  const displayProducts = showSuggestions
+    ? suggestions.slice((currentPage - 1) * 6, currentPage * 6)
+    : products;
+
+  const effectiveTotalPages = showSuggestions
+    ? Math.ceil(suggestions.length / 6)
+    : totalPages;
+
+  const shouldShowPagination =
+    (showSuggestions && suggestions.length > 6) ||
+    (!showSuggestions && totalPages > 1);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -193,41 +225,47 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Discover Amazing{" "}
-            <span className="text-pink-600">Educational Courses</span>
+            Master <span className="text-pink-600">English Language</span>{" "}
+            Skills
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Explore our curated collection of premium courses designed to boost
-            your skills and career
+            Discover our comprehensive collection of English learning courses
+            designed to boost your language skills and confidence
           </p>
         </div>
 
         <SearchFilters
-          onSearch={handleSearch}
-          onPriceFilter={handlePriceFilter}
+          onFiltersChange={handleFiltersChange}
           onGetSuggestions={handleGetSuggestions}
           loading={searchLoading}
           suggestionsLoading={suggestionsLoading}
+          availableCategories={availableCategories}
+          availableInstructors={availableInstructors}
         />
 
+        {showSuggestions && suggestionBasedOn && (
+          <SuggestionExplanation
+            basedOn={suggestionBasedOn}
+            onSortChange={handleSuggestionSortChange}
+            currentSort={suggestionSort}
+          />
+        )}
+
         {showSuggestions && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                 <Wand2 className="w-6 h-6 text-pink-600 mr-2" />
                 Smart Suggestions for You
               </h2>
               <button
                 onClick={() => setShowSuggestions(false)}
-                className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                className="text-gray-500 hover:text-gray-700 cursor-pointer flex items-center px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 mr-1" />
+                Back to Browse
               </button>
             </div>
-            <p className="text-gray-600 mb-6">
-              Based on your viewing history and preferences, we think
-              you&apos;ll love these courses
-            </p>
           </div>
         )}
 
@@ -235,7 +273,7 @@ export default function Home() {
           <div className="flex justify-between items-center mb-6">
             <p className="text-gray-600">
               Showing {products.length} of {totalProducts} courses
-              {currentSearch && ` for "${currentSearch}"`}
+              {currentFilters.search && ` for "${currentFilters.search}"`}
             </p>
             <p className="text-sm text-gray-500">
               Page {currentPage} of {totalPages}
@@ -243,7 +281,19 @@ export default function Home() {
           </div>
         )}
 
-        {loading ? (
+        {showSuggestions && (
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-gray-600">
+              Showing {displayProducts.length} of {suggestions.length} suggested
+              courses
+            </p>
+            <p className="text-sm text-gray-500">
+              Page {currentPage} of {effectiveTotalPages}
+            </p>
+          </div>
+        )}
+
+        {loading || suggestionsLoading ? (
           <ProductGridSkeleton />
         ) : displayProducts.length > 0 ? (
           <>
@@ -259,10 +309,10 @@ export default function Home() {
               ))}
             </div>
 
-            {shouldShowPagination && !loading && (
+            {shouldShowPagination && !loading && !suggestionsLoading && (
               <Pagination
                 currentPage={currentPage}
-                totalPages={totalPages}
+                totalPages={effectiveTotalPages}
                 onPageChange={handlePageChange}
                 className="mt-8"
               />
@@ -270,7 +320,7 @@ export default function Home() {
           </>
         ) : (
           <div className="text-center py-12">
-            <i className="ri-search-line text-6xl text-gray-300 mb-4"></i>
+            <Search className="w-16 h-16 text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No courses found
             </h3>
