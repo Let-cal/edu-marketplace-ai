@@ -10,8 +10,9 @@ import SuggestionExplanation from "@/components/SuggestionExplanation";
 import Pagination from "@/components/ui/Pagination";
 import { productApi } from "@/lib/api";
 import { Product, SuggestionBasedOn } from "@/lib/types";
-import { Search, Wand2, X } from "lucide-react";
+import { Heart, HeartOff, Search, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -163,13 +164,32 @@ export default function Home() {
 
   const handleToggleFavorite = (productId: string) => {
     const newFavorites = new Set(favorites);
+    let isAdding = false;
     if (newFavorites.has(productId)) {
       newFavorites.delete(productId);
     } else {
       newFavorites.add(productId);
+      isAdding = true;
     }
     setFavorites(newFavorites);
     localStorage.setItem("favorites", JSON.stringify([...newFavorites]));
+    if (isAdding) {
+      toast.success("Course added to favorites!", {
+        description: "Visit the favorites page to view it again!",
+        icon: <Heart className="w-5 h-5 text-pink-500 fill-current" />,
+        action: {
+          label: "View Favorites",
+          onClick: () => {
+            window.location.href = "/favorites";
+          },
+        },
+      });
+    } else {
+      toast("Course removed from favorites", {
+        description: "The course has been removed from your favorites list.",
+        icon: <HeartOff className="w-5 h-5 text-gray-500" />,
+      });
+    }
   };
 
   const handleViewDetails = (product: Product) => {
@@ -319,7 +339,7 @@ export default function Home() {
             )}
           </>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12 flex flex-col items-center">
             <Search className="w-16 h-16 text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No courses found

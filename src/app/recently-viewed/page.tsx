@@ -154,7 +154,7 @@ export default function RecentlyViewedPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12 flex flex-col items-center">
             <History className="w-16 h-16 text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No recently viewed courses

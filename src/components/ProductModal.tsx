@@ -155,7 +155,7 @@ export default function ProductModal({
               <div className="flex space-x-3">
                 <Button onClick={handleAddToCart} className="flex-1" size="lg">
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Enroll Now - {formatPrice(product.price)} IDR
+                  Enroll Now - {formatPrice(product.price)} VND
                 </Button>
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function ProductModal({
                   {product.title}
                 </h2>
                 <div className="text-3xl font-bold text-pink-600 mb-1">
-                  {formatPrice(product.price)} IDR
+                  {formatPrice(product.price)} VND
                 </div>
               </div>
 
@@ -303,7 +303,7 @@ export default function ProductModal({
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <div className="text-sm text-gray-500 mb-1">Total Price</div>
               <div className="text-2xl font-bold text-pink-600 mb-3">
-                {formatPrice(product.price)} IDR
+                {formatPrice(product.price)} VND
               </div>
               <Button
                 className="w-full mb-3"

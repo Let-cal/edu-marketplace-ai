@@ -75,7 +75,7 @@ export default function ProductCard({
             <div className="text-lg font-bold text-pink-600">
               {formatPrice(product.price)}
             </div>
-            <div className="text-xs text-gray-500">IDR</div>
+            <div className="text-xs text-gray-500">VND</div>
           </div>
         </div>
 

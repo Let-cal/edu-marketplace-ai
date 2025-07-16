@@ -237,11 +237,11 @@ export default function CartPage() {
                         <div className="flex flex-row justify-between">
                           <div className="text-left sm:text-right">
                             <div className="text-lg font-bold text-pink-600">
-                              {formatPrice(item.price * item.quantity)} IDR
+                              {formatPrice(item.price * item.quantity)} VND
                             </div>
                             {item.quantity > 1 && (
                               <div className="text-sm text-gray-500">
-                                {formatPrice(item.price)} IDR each
+                                {formatPrice(item.price)} VND each
                               </div>
                             )}
                           </div>
@@ -269,20 +269,20 @@ export default function CartPage() {
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal ({totalItems} items)</span>
                     <span className="break-all">
-                      {formatPrice(totalPrice)} IDR
+                      {formatPrice(totalPrice)} VND
                     </span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Discount</span>
                     <span className="text-green-600">
-                      -{formatPrice(0)} IDR
+                      -{formatPrice(0)} VND
                     </span>
                   </div>
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold text-gray-900">
                       <span>Total</span>
                       <span className="text-pink-600 break-all">
-                        {formatPrice(totalPrice)} IDR
+                        {formatPrice(totalPrice)} VND
                       </span>
                     </div>
                   </div>

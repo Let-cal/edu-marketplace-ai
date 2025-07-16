@@ -148,7 +148,7 @@ export default function FavoritesPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12 flex flex-col items-center">
             <Heart
               className="w-16 h-16 text-gray-300 mb-4"
               fill="none"
