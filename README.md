@@ -107,6 +107,19 @@ my-app/
 └── tsconfig.json      # TypeScript configuration
 ```
 
+📦 Mock Data Integration
+To avoid exposing local mock-data.ts and to allow better flexibility and isolation, the project now pulls mock data directly from a public GitHub Gist:
+
+🔗 Remote Mock Data Source:
+https://gist.githubusercontent.com/Let-cal/cdd3e74266e18aa68e4aed6ee850e7dc/raw/73c4ad74e08a99a3b38cbfa1f1ada3cbf5a9b392/mock-data.json
+
+This JSON contains:
+- An array of mockProducts (educational course objects)
+- A mockUser object with favoriteProducts and viewedProducts arrays for simulating user interaction behavior
+
+👉 The data is fetched inside lib/api.ts, ensuring all frontend components such as product listings, suggestions, and user preferences consume a centralized data source. This also avoids exposing hardcoded branding/content strings like "readdy.ai" in your local codebase.
+You can update this Gist content anytime to reflect new courses, tags, or categories — no need to rebuild your application or expose internal files.
+
 ## 🎯 Core Functionality
 
 ### 1. Product Catalog Display
