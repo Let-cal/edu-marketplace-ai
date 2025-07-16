@@ -35,19 +35,13 @@ Before running this project, ensure you have the following installed:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Let-cal/edu-marketplace-ai.git
    cd my-app
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   ```
-
-3. **Environment setup**
-   Create a `.env.local` file in the root directory and add your environment variables:
-   ```env
-   NEXT_PUBLIC_API_URL=your_api_url_here
    ```
 
 ## 🚀 Development
@@ -73,29 +67,39 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 ```
 my-app/
-├── public/             # Static assets
-├── src/                # Source code directory
-│   ├── app/            # Next.js 13+ App Router
-│   │   ├── cart/       # Shopping cart page
-│   │   ├── favorites/  # Wishlist/favorites page
-│   │   ├── recently-viewed/ # Recently viewed products
-│   │   ├── favicon.ico # Application favicon
-│   │   ├── globals.css # Global styles
-│   │   ├── layout.tsx  # Root layout component
-│   │   ├── not_found.tsx # 404 error page
-│   │   └── page.tsx    # Home page component
-│   ├── components/     # Reusable UI components
-│   │   ├── ui/         # shadcn/ui components
-│   │   │   ├── Header.tsx
-│   │   │   ├── LoadingSkeleton.tsx
-│   │   │   ├── ProductCard.tsx
-│   │   │   ├── ProductModal.tsx
-│   │   │   └── SearchFilters.tsx
-│   └── lib/            # Utility functions and configurations
-│       ├── api.ts      # API service functions
-│       ├── mock-data.ts # Mock data for development
-│       ├── types.ts    # TypeScript type definitions
-│       └── utils.ts    # Utility functions
+├── public/                        # Static assets (e.g., favicon, images)
+├── src/
+│   ├── app/                       # App routes (Next.js App Router)
+│   │   ├── api/
+│   │   │   └── mock-data/         # API mock route
+│   │   │       └── route.ts       # Handles mock suggestion API requests
+│   │   ├── cart/                  # Shopping cart page
+│   │   │   └── page.tsx
+│   │   ├── favorites/             # Wishlist/favorites page
+│   │   │   └── page.tsx
+│   │   ├── recently-viewed/       # Recently viewed products page
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico            # Application favicon
+│   │   ├── globals.css            # Global Tailwind styles
+│   │   ├── layout.tsx             # Root layout shared across all pages
+│   │   ├── not_found.tsx          # 404 error page
+│   │   └── page.tsx               # Main homepage
+│
+├── components/                    # Reusable UI components
+│   └── ui/                        # Shared UI components using shadcn/ui
+│       ├── ChatBot.tsx
+│       ├── Header.tsx
+│       ├── LoadingSkeleton.tsx
+│       ├── ProductCard.tsx
+│       ├── ProductModal.tsx
+│       ├── SearchFilters.tsx
+│       └── SuggestionExplanation.tsx
+│
+├── lib/                           # Core utilities and business logic
+│   ├── api.ts                     # API service layer (fetches and transforms mock data)
+│   ├── mock-data.ts               # (Deprecated) — local mock data (replaced by remote JSON)
+│   ├── types.ts                   # TypeScript type definitions
+│   └── utils.ts                   # Utility functions
 ├── .gitignore          # Git ignore rules
 ├── package.json        # Project dependencies and scripts
 ├── README.md          # Project documentation
@@ -185,4 +189,4 @@ For support and questions, please contact the development team or open an issue 
 
 ---
 
-**Built with ❤️ using Next.js, TypeScript, and Tailwind CSS**
+**Built with ❤️ using Next.js, TypeScript, Tailwind CSS and shadcn-UI Components**
